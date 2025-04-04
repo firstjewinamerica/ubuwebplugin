@@ -1,1 +1,39 @@
+// background.js - Handles opening popup windows for notes
+console.log("UbuWeb Checkboxer: Background script loaded");
 
+// Keep track of open note windows
+const openNoteWindows = {};
+
+// Listen for messages from content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "openNoteWindow") {
+    // Check if a window is already open for this item
+    if (openNoteWindows[message.key]) {
+      // Focus the existing window
+      chrome.windows.update(openNoteWindows[message.key], {focused: true});
+      return;
+    }
+    
+    // Create the popup window
+    chrome.windows.create({
+      url: chrome.runtime.getURL("note-popup.html") + 
+           `?key=${encodeURIComponent(message.key)}` + 
+           `&title=${encodeURIComponent(message.title)}` + 
+           `&note=${encodeURIComponent(message.note)}`,
+      type: "popup",
+      width: 400,
+      height: 300
+    }, (window) => {
+      // Store the window ID
+      openNoteWindows[message.key] = window.id;
+      
+      // Add listener to remove from tracking when window is closed
+      chrome.windows.onRemoved.addListener(function listener(windowId) {
+        if (windowId === window.id) {
+          delete openNoteWindows[message.key];
+          chrome.windows.onRemoved.removeListener(listener);
+        }
+      });
+    });
+  }
+});
