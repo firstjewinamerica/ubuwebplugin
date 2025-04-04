@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "UbuWeb Checkboxer",
+  "description": "Adds checkboxes and notes to track watched content on UbuWeb's film index",
+  "version": "1.0",
+  "permissions": ["storage", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.ubu.com/film/index.html",
+        "*://ubu.com/film/index.html",
+        "*://*.ubuweb.com/film/index.html",
+        "*://ubuweb.com/film/index.html"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["note-popup.html", "note-popup.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
